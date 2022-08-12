@@ -7,9 +7,6 @@ from pyecharts.charts import Line
 from streamlit_echarts import st_pyecharts
 import pandas as pd
 
-high_temperature = [11, 11, 15, 13, 12, 13, 10]
-low_temperature = [1, -2, 2, 5, 3, 2, 0]
-
 
 class TimeLinePlotterTool:
     def __init__(
@@ -31,11 +28,11 @@ class TimeLinePlotterTool:
     def timeplot(self, data: pd.DataFrame, time_axis="dt", *, cols=None):
         try:
             assert time_axis in data.columns, "Time axis not found in df"
-            time_axis = data.time_axis.tolist()
+            time_axis = data[time_axis].tolist()
         except Exception as e:
             print(e)
             time_axis = data.index.tolist()
-        t_axis_data = time_axis.strftime("%B %d, %Y, %r")
+        t_axis_data = time_axis  # .strftime("%B %d, %Y, %r")
         if cols is None:
             cols = [c for c in data.columns if c != time_axis]
 
@@ -52,7 +49,7 @@ class TimeLinePlotterTool:
         b = line
         st_pyecharts(b)
 
-    def plot_space(x_axis_data: list, figsize=None):
+    def plot_space(self, x_axis_data: list, figsize=None):
         if figsize:
             assert isinstance(figsize, tuple), "figsize must be a tuple"
             _figsize = figsize
@@ -66,6 +63,6 @@ class TimeLinePlotterTool:
         line.add_xaxis(xaxis_data=x_axis_data)
         return line
 
-    def _add_line(line: Line, y: list, name: str, line_style: dict) -> Line:
-        _line = line.add_yaxis(name, xaxis_data=y)
+    def _add_line(self, line: Line, y: list, name: str) -> Line:
+        _line = line.add_yaxis(name, y)
         return _line

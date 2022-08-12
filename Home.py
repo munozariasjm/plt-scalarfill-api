@@ -3,6 +3,7 @@ from streamlit.logger import get_logger
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+from src.imgs.paths import bril_logo, cms_logo
 
 LOGGER = get_logger(__name__)
 st.set_page_config(
@@ -23,7 +24,7 @@ authenticator = stauth.authenticate(
     "signature_key",
     cookie_expiry_days=30,
 )
-name, authentication_status = authenticator.login("Login", "sidebar")
+name, authentication_status = authenticator.login("Login", "main")
 
 
 def display_home():
@@ -37,23 +38,23 @@ def display_home():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.header("Hypersegmentación de Usuarios")
-        st.image(
-            "https://qph.cf2.quoracdn.net/main-qimg-78b3a5a4494a7fb0ff29743971931191"
-        )
+        st.header("")
+        st.image(cms_logo)
 
     with col2:
-        st.header("Comprensión inteligente de PQRS")
-        st.image("https://i.imgur.com/XMSE69U.png")
+        st.header("")
+        st.image(bril_logo)
 
 
 def run():
     if authentication_status:
         display_home()
+        st.sidebar.subheader("You are logged in as: " + name)
+        st.sidebar.image(bril_logo)
     elif authentication_status == False:
-        st.error("Username/password es incorrecto")
+        st.error("Username/password Incorrect")
     elif authentication_status == None:
-        st.warning("Por favor ingrese su Username/password")
+        st.warning("Please add a correct username and password")
 
 
 if __name__ == "__main__":

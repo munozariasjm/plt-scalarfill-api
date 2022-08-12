@@ -1,9 +1,14 @@
 credentials:
   usernames:
     jmunozar:
-      email: 
-      name: jmunozar@cern.ch
+      email: jmunozar@cern.ch
+      name: jmunozar
       password: $2b$12$yx9nyzX8ju8o0HQJWTkvHelS8vP3.QVxBfQKoMevoEH6EwG638STy # My cern pass
+
+    plt:
+      email: plt
+      name: PLT Team
+      password: $2b$12$4wWf6B6zwXzRd1kC.E0hyOFUjWRwQaY5QfMTTiWHjO7mbqdUBHEJC # plt
 
 cookie:
   expiry_days: 90
