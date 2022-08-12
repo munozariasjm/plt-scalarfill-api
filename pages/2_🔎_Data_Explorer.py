@@ -141,10 +141,10 @@ def page_display():
     with st.expander("Download file", expanded=False):
         st.write(f"Downloading data for fill {fill_number} as a hdf file")
         st.warning("The query will be applied to the dataframe")
-        fill_df.to_hdf("./storage/foo.h5", index=False, mode="w", key="df")
-        with open("./storage/foo.h5", "rb") as f:
+        fill_df.to_hdf("foo.h5", index=False, mode="w", key="df")
+        with open("foo.h5", "rb") as f:
             st.download_button("Download", f, file_name=f"fill_{fill_number}.h5")
-        os.system("rm ./storage/*.h5")
+        os.system("rm foo.h5")
 
 
 def main_page():
