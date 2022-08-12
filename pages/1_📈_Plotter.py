@@ -49,11 +49,11 @@ def select_channel():
 
 
 def _get_fill_number():
-    st.sidebar.header("Select a fill")
+    st.sidebar.subheader("Select a fill number in the left sidebar")
     fill_number = st.sidebar.number_input(
         "Fill number", value=3815, min_value=3815, max_value=8114
     )
-    with st.expander("Help", expanded=False):
+    with st.expander("More", expanded=False):
         st.sidebar.write("Fill number is the number of the fill in the fill list")
         available_fills = data_downloader.get_available_fills()
         if st.sidebar.button("Get a random fill number"):
@@ -61,7 +61,7 @@ def _get_fill_number():
             st.sidebar.write(f"Displaying fill number {fill_number}")
         if st.sidebar.button("Select from all available fills"):
             st.sidebar.write(f"We have {len(available_fills)} fills available")
-            fill_number = st.selectbox(available_fills)
+            fill_number = st.selectbox("available fills", available_fills)
 
     return fill_number
 

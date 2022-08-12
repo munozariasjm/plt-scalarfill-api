@@ -43,7 +43,7 @@ class TimeLinePlotterTool:
         line.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            toolbox_opts=opts.ToolboxOpts(is_show=True),
+            toolbox_opts=opts.ToolboxOpts(is_show=True, item_size=10, item_gap=5,),
             xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
         )
         b = line
@@ -64,5 +64,13 @@ class TimeLinePlotterTool:
         return line
 
     def _add_line(self, line: Line, y: list, name: str) -> Line:
-        _line = line.add_yaxis(name, y)
+        _line = line.add_yaxis(
+            name,
+            y,
+            symbol_size=8,
+            is_hover_animation=False,
+            label_opts=opts.LabelOpts(is_show=False),
+            linestyle_opts=opts.LineStyleOpts(width=1.5),
+            is_smooth=True,
+        )
         return _line
