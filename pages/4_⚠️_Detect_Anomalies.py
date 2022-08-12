@@ -17,8 +17,8 @@ data_downloader = RemoteDataGetter()
 ##########################################
 warnings.filterwarnings("ignore")
 st.set_option("deprecation.showPyplotGlobalUse", False)
-st.set_page_config(page_title="History Explorer", page_icon="📈")
-st.markdown(" # History Explorer")
+st.set_page_config(page_title="Dectect Anomalies", page_icon="⚠️")
+st.markdown(" # Dectect Anomalies ⚠️")
 
 ##########################################
 with open("./users.yaml") as file:
@@ -39,27 +39,11 @@ name, authentication_status = authenticator.login("Login", "sidebar")
 ##########################################
 
 
-def get_host_content(host_path="https://delannoy.web.cern.ch/plt-scaler/"):
-    contents = requests.get(host_path).content
-    fill_nums = list(set(re.findall(r"\d+.pkl", str(contents))))
-    fill_dates = re.findall(r" \d{4}-\d+-\d+ \d+:\d+\s", str(contents))
-    sizes = re.findall(r" \d+.?\d+?[MK]", str(contents))
-    st.write("Files in the datavbase ", len(fill_nums))
-    return pd.DataFrame(
-        {"fill_number": fill_nums, "Uploading date": fill_dates, "size": sizes,}
-    )
-
-
-def page_display():
-    contents = get_host_content()
-    AgGrid(contents)
-
 
 def main_page():
     if authentication_status:
-        page_display()
-        st.sidebar.write("Logged in as: " + name)
-        # st.sidebar.image(cms_logo)
+        st.write("Should it be putted here?")
+        st.write("If yes, please talk to Jose M Munoz")
     elif authentication_status == False:
         st.error("Username/password is incorrect")
     elif authentication_status == None:
