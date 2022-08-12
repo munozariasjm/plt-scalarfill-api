@@ -43,8 +43,35 @@ class TimeLinePlotterTool:
         line.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            toolbox_opts=opts.ToolboxOpts(is_show=True, item_size=10, item_gap=5,),
-            xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
+            # toolbox_opts=opts.ToolboxOpts(is_show=True, item_size=10, item_gap=5,),
+            axispointer_opts=opts.AxisPointerOpts(
+                is_show=True, link=[{"xAxisIndex": "all"}]
+            ),
+            datazoom_opts=[
+                opts.DataZoomOpts(
+                    is_show=True,
+                    is_realtime=True,
+                    start_value=30,
+                    end_value=70,
+                    xaxis_index=[0, 1],
+                )
+            ],
+            xaxis_opts=opts.AxisOpts(
+                type_="category",
+                boundary_gap=False,
+                axisline_opts=opts.AxisLineOpts(is_on_zero=True),  # TODO
+            ),
+            legend_opts=opts.LegendOpts(pos_left="center"),
+            toolbox_opts=opts.ToolboxOpts(
+                is_show=True,
+                item_size=10,
+                item_gap=5,
+                feature={
+                    "dataZoom": {"yAxisIndex": "none"},
+                    "restore": {},
+                    "saveAsImage": {},
+                },
+            ),
         )
         b = line
         st_pyecharts(b)
