@@ -44,7 +44,7 @@ def get_host_content(host_path="https://delannoy.web.cern.ch/plt-scaler/"):
     fill_nums = list(set(re.findall(r"\d+.pkl", str(contents))))
     fill_dates = re.findall(r" \d{4}-\d+-\d+ \d+:\d+\s", str(contents))
     sizes = re.findall(r" \d+.?\d+?[MK]", str(contents))
-    st.write("Files in the datavbase ", len(fill_nums))
+    st.write("Files in the database ", len(fill_nums))
     return pd.DataFrame(
         {"fill_number": fill_nums, "Uploading date": fill_dates, "size": sizes,}
     )
