@@ -2,6 +2,13 @@
 # a bit more pythonic and easier to use.
 # by: Jose M Munoz @munozariasjm
 
+from pyecharts.options.global_options import (
+    ToolBoxFeatureRestoreOpts,
+    ToolBoxFeatureSaveAsImageOpts,
+    ToolBoxFeatureOpts,
+    ToolBoxFeatureDataViewOpts,
+    ToolBoxFeatureDataZoomOpts
+)
 from distutils.command.install_egg_info import install_egg_info
 from re import sub
 import pyecharts.options as opts
@@ -98,8 +105,8 @@ class LinePlotterTool:
                 opts.DataZoomOpts(
                     is_show=True,
                     is_realtime=True,
-                    start_value=30,
-                    end_value=70,
+                    start_value=0,
+                    end_value=100,
                     xaxis_index=[0, 1],
                 )
             ],
@@ -113,11 +120,13 @@ class LinePlotterTool:
                 is_show=True,
                 item_size=10,
                 item_gap=5,
-                feature={
-                    "dataZoom": {"yAxisIndex": "none"},
-                    "restore": {},
-                    "saveAsImage": {},
-                },
+                feature=ToolBoxFeatureOpts(
+                    save_as_image=ToolBoxFeatureSaveAsImageOpts(title="Download"),
+                    restore=ToolBoxFeatureRestoreOpts(title="Restore"),
+                    data_view=ToolBoxFeatureDataViewOpts(title="View"),
+                    data_zoom=ToolBoxFeatureDataZoomOpts(zoom_title="Zoom", back_title="Undo Zoom" )
+                    
+                )
             ),
         )
         b = line
