@@ -11,10 +11,10 @@ from streamlit_echarts import st_pyecharts
 import pandas as pd
 from dataclasses import dataclass
 from typing import Tuple
-
+import streamlit as st
 
 @dataclass
-class TimeLinePlotterTool:
+class LinePlotterTool:
     """Simple plotting wrappler for interactive timeseries visualizations using a
     pythonic api. All the plotting interface is designed for streamlit, but the 
     when pyecharts is working, can work in any evironment.
@@ -40,34 +40,7 @@ class TimeLinePlotterTool:
             clf.x_axis_label = x_label
         elif y_label:
             clf.y_axis_label = y_label
-            
-        
-    @classmethod
-    def subplots(cls, size: Tuple[int],
-                 figsizes: Tuple[tuple] = None) -> tuple:
-        """A little wrappler that imitates the basic behaveur of plt.subplots"""
-        fig = cls()
-        if not isinstance(size, (tuple, list)):
-            if isinstance(size, int):
-                n_rows = size
-                n_cols = 1
-            else:
-                print("Specify the configuration as (nrows, ncols)")
-                raise TypeError
-        n_rows = size[0]
-        n_cols = size[1]
-        if not figsizes or not isinstance(figsizes, (tuple, list)):
-            figsizes = [[None for j in range(n_rows)] for i in range(n_cols)]
-        ax = []
-        for i in range(n_cols):
-            ax.append([fig._get_line(figsizes[i][j])
-                        for j in range(n_rows)])
-        print(ax)
-        if n_cols == 1:
-            return fig, ax[0]
-        else: 
-            return fig, ax
-        
+                    
     @staticmethod
     def _get_line(figsize):
         if figsize:
@@ -90,17 +63,21 @@ class TimeLinePlotterTool:
             print(e)
             time_axis = data.index.tolist()
         t_axis_data = time_axis
-        if cols is None:
-            cols = [c for c in data.columns if c != time_axis]
+        if isinstance(cols, str):
+            cols = [cols]
+        elif not cols:
+            cols = [c for c in data.columns if c != x]
+        
         line = self.plot_space(t_axis_data, line=ax)
         for col in cols:
+            print(col)
             line = self._add_line(line, data[col], col)
         return line
 
     def set_title(self, title: str):
         self.title = title
     
-    def lineplot(self, data: pd.DataFrame = None, x="dt", *, y=None, ax=None, show=False):
+    def lineplot(self, data: pd.DataFrame = None, x="dt", *, y=None, show=False):
         """Plotter for time series using a seaborn-like style with a dataframe
 
         Args:
@@ -145,26 +122,36 @@ class TimeLinePlotterTool:
         )
         b = line
         if show:
-            self.st_show(b)
+            st_pyecharts(b)
         return b
     
-    @staticmethod
-    def st_show(ax) -> None:
-        if not isinstance(ax, (list, tuple)):
-            try:
-                st_pyecharts(ax)
-            except Exception as e:
-                print("Could not display in streamlit")
-                print(e)
-        else:
-            for j, col in enumerate(ax):
-                for i, line in enumerate(col):
-                    st_pyecharts(line)
-        
     @staticmethod
     def py_show(ax) -> None:
         # TODO
         raise NotImplementedError
+    
+    @staticmethod
+    def st_show(fig):
+        if isinstance(fig, (list, tuple)):
+            try:
+                
+                for j, col_fig in enumerate(fig):
+                    try:
+                        cols = st.columns(len(fig))
+                        with cols[j]:
+                            for row in col_fig:
+                                st_pyecharts(row)
+                                
+                    except Exception as e:
+                        for row in fig:
+                            st_pyecharts(row)
+                            print(e)
+                            
+            except Exception as e:
+                print(e)
+        else:
+            st_pyecharts(fig)
+                
 
     def plot_space(self, x_axis_data: list, figsize=None, line=None):
         if not line:
@@ -183,5 +170,3 @@ class TimeLinePlotterTool:
             is_smooth=True,
         )
         return _line
-
-ech_plotter = TimeLinePlotterTool()
