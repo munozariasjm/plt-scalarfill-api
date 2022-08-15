@@ -1,5 +1,5 @@
 import streamlit as st
-from src.utils.ech_plotter import TimeLinePlotterTool
+from src.utils.ech_plotter import LinePlotterTool
 from src.data.downloader import RemoteDataGetter
 import random
 import yaml
@@ -7,6 +7,8 @@ import warnings
 from yaml.loader import SafeLoader
 import streamlit_authenticator as stauth
 from src.imgs.paths import cms_logo
+import pandas as pd
+import numpy as np
 
 data_downloader = RemoteDataGetter()
 
@@ -44,8 +46,29 @@ def select_data_type():
 
 def select_channel():
     st.header("Select a channel")
-    channel = st.slider("Select a channel", min_value=1, max_value=16, value=1, step=1)
-    return channel
+    opt_strings = [f"Ch {i+1}" for i in range(16)]
+    channels = st.multiselect("Select a channel", opt_strings, opt_strings[0])
+    return channels
+
+
+def foo_channel_data():
+    n = 1000
+    Xdf = []
+    for ch in range(1, 16):
+        df = pd.DataFrame(
+            {
+                "dt": np.arange(n),
+                "ch": np.ones(n) * ch,
+                "s0": np.random.normal(0, 1, n) * n,
+                "s1": np.random.normal(0, 1, n) * n,
+                "s2": np.random.normal(0, 1, n) * n,
+                "d0": np.random.normal(0, 1, n) * n,
+                "d1": np.random.normal(0, 1, n) * n,
+                "d2": np.random.normal(0, 1, n) * n,
+            }
+        )
+        Xdf.append(df)
+    return pd.concat(Xdf)
 
 
 def _get_fill_number():
@@ -67,19 +90,35 @@ def _get_fill_number():
 
 
 def page_display():
+    tools_cols = st.columns(2)
     fill_number = _get_fill_number()
-    data_types = select_data_type()
-    channel = select_channel()
-    fill_df = data_downloader.get_fill_df(taget_fill=fill_number)
-    for mode in data_types:
-        time_line_plotter = TimeLinePlotterTool(title=f"Mode {mode}")
-        col_modes = [
-            c
-            for c in fill_df.columns
-            if c.split(mode)[-1].isnumeric() and not c.split(mode)[0]
-        ]
-        foo_df = fill_df.query(f"ch == {channel}")[col_modes + ["dt"]]
-        time_line_plotter.timeplot(foo_df, time_axis="dt", cols=col_modes)
+    # fill_number = np.random.randint(3000, 9000)
+
+    with tools_cols[0]:
+        with st.expander("Displayed Channels"):
+            channel_list = select_channel()
+    with tools_cols[1]:
+        with st.expander("Displayed Data Type", expanded=False):
+            data_types = select_data_type()
+
+    main_cols = st.columns(len(channel_list))
+
+    for channel_name, channel_col in zip(channel_list, main_cols):
+        with channel_col:
+            st.header(channel_name)
+            fill_df = data_downloader.get_fill_df(taget_fill=fill_number)
+            # fill_df = foo_channel_data()
+            for mode in data_types:
+                time_line_plotter = LinePlotterTool(title=f"Mode {mode}")
+                col_modes = [
+                    c
+                    for c in fill_df.columns
+                    if c.split(mode)[-1].isnumeric() and not c.split(mode)[0]
+                ]
+                channel_num = "".join([l for l in channel_name if l.isnumeric()])
+                foo_df = fill_df.query(f"ch == {channel_num}")[col_modes + ["dt"]]
+                line = time_line_plotter.lineplot(foo_df, x="dt", y=col_modes)
+                time_line_plotter.st_show(line)
 
 
 def main_page():

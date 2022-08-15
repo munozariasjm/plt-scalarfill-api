@@ -2,48 +2,96 @@
 # a bit more pythonic and easier to use.
 # by: Jose M Munoz @munozariasjm
 
+from pyecharts.options.global_options import *
+from distutils.command.install_egg_info import install_egg_info
+from re import sub
 import pyecharts.options as opts
 from pyecharts.charts import Line
+import pyecharts
 from streamlit_echarts import st_pyecharts
 import pandas as pd
+from dataclasses import dataclass
+from typing import Tuple
+import streamlit as st
 
+@dataclass
+class LinePlotterTool:
+    """Simple plotting wrappler for interactive timeseries visualizations using a
+    pythonic api. All the plotting interface is designed for streamlit, but the 
+    when pyecharts is working, can work in any evironment.
+    """
+    title: str = "",
+    subtitle: str = "",
+    x_axis_label: str = "x",
+    y_axis_label: str = "y",
 
-class TimeLinePlotterTool:
-    def __init__(
-        self, title="", subtitle="", x_axis_name="", y_axis_name="", figsize=None
-    ) -> None:
-        self.title = title
-        self.subtitle = subtitle
-        self.x_axis_name = x_axis_name
-        self.y_axis_name = y_axis_name
+    @classmethod
+    def set(clf, ax=None, *, x_label=None, y_label=None, subtitle=None):
+        """Setter for some characteristics of the plot space
 
-    def set(
-        self, *, title="", subtitle="", x_axis_name="", y_axis_name="",
-    ):
-        self.title = title
-        self.subtitle = subtitle
-        self.x_axis_name = x_axis_name
-        self.y_axis_name = y_axis_name
+        Args:
+            title (str, optional): Title to put on the figure. Defaults to "".
+            subtitle (str, optional): Subtitle of the figure. Defaults to "".
+            x_axis_label (str, optional): Label to put in the x axis. Defaults to "".
+            y_axis_label (str, optional): Label to put in the y axis. Defaults to "".
+        """
+        if subtitle:
+            clf.subtitle = subtitle
+        elif x_label:
+            clf.x_axis_label = x_label
+        elif y_label:
+            clf.y_axis_label = y_label
+                    
+    @staticmethod
+    def _get_line(figsize):
+        if figsize:
+            assert isinstance(figsize, tuple), "figsize must be a tuple."
+            _figsize = figsize
+        else:
+            _figsize = (16, 8)
+        line = Line(init_opts=opts.InitOpts(
+                    width=f"{_figsize[0]*100}px",
+                    height=f"{_figsize[1]*100}px"
+                )
+            )
+        return line
 
-    def timeplot(self, data: pd.DataFrame, time_axis="dt", *, cols=None):
+    def _lineplot_df(self, data: pd.DataFrame, x="dt", cols=None, ax=None):
         try:
-            assert time_axis in data.columns, "Time axis not found in df"
-            time_axis = data[time_axis].tolist()
+            assert x in data.columns, "The x axis not found in df"
+            time_axis = data[x].tolist()
         except Exception as e:
             print(e)
             time_axis = data.index.tolist()
-        t_axis_data = time_axis  # .strftime("%B %d, %Y, %r")
-        if cols is None:
-            cols = [c for c in data.columns if c != time_axis]
-
-        line = self.plot_space(t_axis_data)
+        t_axis_data = time_axis
+        if isinstance(cols, str):
+            cols = [cols]
+        elif not cols:
+            cols = [c for c in data.columns if c != x]
+        
+        line = self.plot_space(t_axis_data, line=ax)
         for col in cols:
+            print(col)
             line = self._add_line(line, data[col], col)
+        return line
+
+    def set_title(self, title: str):
+        self.title = title
+    
+    def lineplot(self, data: pd.DataFrame = None, x="dt", *, y=None, show=False):
+        """Plotter for time series using a seaborn-like style with a dataframe
+
+        Args:
+            data (pd.DataFrame): _description_
+            time_axis (str, optional): _description_. Defaults to "dt".
+            cols (_type_, optional): _description_. Defaults to None.
+        """
+        if isinstance(x, str):
+            line = self._lineplot_df(data, x, cols=y)
 
         line.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            # toolbox_opts=opts.ToolboxOpts(is_show=True, item_size=10, item_gap=5,),
             axispointer_opts=opts.AxisPointerOpts(
                 is_show=True, link=[{"xAxisIndex": "all"}]
             ),
@@ -51,42 +99,74 @@ class TimeLinePlotterTool:
                 opts.DataZoomOpts(
                     is_show=True,
                     is_realtime=True,
-                    start_value=30,
-                    end_value=70,
+                    start_value=0,
+                    end_value=100,
                     xaxis_index=[0, 1],
                 )
             ],
             xaxis_opts=opts.AxisOpts(
                 type_="category",
                 boundary_gap=False,
-                axisline_opts=opts.AxisLineOpts(is_on_zero=True),  # TODO
+                axisline_opts=opts.AxisLineOpts(is_on_zero=True),
             ),
             legend_opts=opts.LegendOpts(pos_left="center"),
             toolbox_opts=opts.ToolboxOpts(
                 is_show=True,
                 item_size=10,
                 item_gap=5,
-                feature={
-                    "dataZoom": {"yAxisIndex": "none"},
-                    "restore": {},
-                    "saveAsImage": {},
-                },
+                feature=ToolBoxFeatureOpts(
+                    data_zoom=ToolBoxFeatureDataZoomOpts(zoom_title="Zoom",
+                                                         back_title="Undo Zoom"),
+                    restore=ToolBoxFeatureRestoreOpts(title="Restore"),
+                    data_view=ToolBoxFeatureDataViewOpts(title="View",
+                                                         lang=["View data", 
+                                                               "Back",
+                                                               "Back"]
+                                                         ),
+                    save_as_image=ToolBoxFeatureSaveAsImageOpts(title="Download"),
+                    
+                    magic_type={},
+                    brush={}
+                    
+                )
             ),
         )
         b = line
-        st_pyecharts(b)
-
-    def plot_space(self, x_axis_data: list, figsize=None):
-        if figsize:
-            assert isinstance(figsize, tuple), "figsize must be a tuple"
-            _figsize = figsize
+        if show:
+            st_pyecharts(b)
+        return b
+    
+    @staticmethod
+    def py_show(ax) -> None:
+        # TODO
+        raise NotImplementedError
+    
+    @staticmethod
+    def st_show(fig):
+        if isinstance(fig, (list, tuple)):
+            try:
+                
+                for j, col_fig in enumerate(fig):
+                    try:
+                        cols = st.columns(len(fig))
+                        with cols[j]:
+                            for row in col_fig:
+                                st_pyecharts(row)
+                                
+                    except Exception as e:
+                        for row in fig:
+                            st_pyecharts(row)
+                            print(e)
+                            
+            except Exception as e:
+                print(e)
         else:
-            _figsize = (16, 8)
-        line = Line(
-            init_opts=opts.InitOpts(
-                width=f"{_figsize[0]*100}px", height=f"{_figsize[1]*100}px"
-            )
-        )
+            st_pyecharts(fig)
+                
+
+    def plot_space(self, x_axis_data: list, figsize=None, line=None):
+        if not line:
+            line = self._get_line(figsize)
         line.add_xaxis(xaxis_data=x_axis_data)
         return line
 
