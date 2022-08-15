@@ -1,5 +1,4 @@
 import streamlit as st
-from src.utils.ech_plotter import TimeLinePlotterTool
 from src.data.downloader import RemoteDataGetter
 import random
 import yaml
@@ -37,7 +36,6 @@ authenticator = stauth.authenticate(
 )
 name, authentication_status = authenticator.login("Login", "sidebar")
 ##########################################
-
 
 
 def main_page():
