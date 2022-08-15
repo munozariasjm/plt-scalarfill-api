@@ -10,7 +10,7 @@ from src.imgs.paths import cms_logo
 import pandas as pd
 import numpy as np
 
-# data_downloader = RemoteDataGetter()
+data_downloader = RemoteDataGetter()
 
 ##########################################
 warnings.filterwarnings("ignore")
@@ -91,8 +91,8 @@ def _get_fill_number():
 
 def page_display():
     tools_cols = st.columns(2)
-    # fill_number = _get_fill_number()
-    fill_number = np.random.randint(3000, 9000)
+    fill_number = _get_fill_number()
+    # fill_number = np.random.randint(3000, 9000)
 
     with tools_cols[0]:
         with st.expander("Displayed Channels"):
@@ -106,8 +106,8 @@ def page_display():
     for channel_name, channel_col in zip(channel_list, main_cols):
         with channel_col:
             st.header(channel_name)
-            # fill_df = data_downloader.get_fill_df(taget_fill=fill_number)
-            fill_df = foo_channel_data()
+            fill_df = data_downloader.get_fill_df(taget_fill=fill_number)
+            # fill_df = foo_channel_data()
             for mode in data_types:
                 time_line_plotter = LinePlotterTool(title=f"Mode {mode}")
                 col_modes = [
