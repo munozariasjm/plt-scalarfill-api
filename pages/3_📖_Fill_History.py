@@ -1,6 +1,5 @@
 import streamlit as st
 from src.data.downloader import RemoteDataGetter
-import random
 import yaml
 import warnings
 from yaml.loader import SafeLoader
